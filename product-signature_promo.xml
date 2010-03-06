@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<product productid="signature_promo" active="1">
+	<title>Signature Promo</title>
+	<description />
+	<version>0.1</version>
+	<url />
+	<versioncheckurl />
+	<apm_releasedate>0</apm_releasedate>
+	<apm_author />
+	<apm_relatedurl />
+	<apm_extrainfo />
+	<apm_extraedit />
+	<dependencies>
+	</dependencies>
+	<codes>
+	</codes>
+	<templates>
+		<template name="promo_signature" templatetype="template" date="1265910648" username="Vitaly" version=""><![CDATA[        <div class="signature_block">
+                <a href="payments.php$session[sessionurl_q]"><img src="$stylevar[imgdir_misc]/colorpicker_transparent.gif" alt="$vbphrase[promo_signature_msg]"  border="0" /></a>
+                $signature
+        </div>
+        ]]></template>
+	</templates>
+	<plugins>
+		<plugin active="1" executionorder="5">
+			<title>Cache Templates</title>
+			<hookname>cache_templates</hookname>
+			<phpcode><![CDATA[$globaltemplates[] = 'promo_signature';]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Remove signature checkbox from post edit</title>
+			<hookname>editpost_edit_complete</hookname>
+			<phpcode><![CDATA[$vbulletin->userinfo['signature'] = '';]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Remove signature checkbox from post (reply) creation</title>
+			<hookname>newreply_form_start</hookname>
+			<phpcode><![CDATA[$vbulletin->userinfo['signature'] = '';]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Remove signature checkbox from thread creation</title>
+			<hookname>newthread_form_start</hookname>
+			<phpcode><![CDATA[$vbulletin->userinfo['signature'] = '';]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Remove signature checkbox from options</title>
+			<hookname>parse_templates</hookname>
+			<phpcode><![CDATA[if ($vbulletin->templatecache['modifyoptions'])
+{
+    $vbulletin->templatecache['modifyoptions'] = str_replace('							<div><label for=\"cb_showsignatures\"><input type=\"checkbox\" name=\"options[showsignatures]\" value=\"1\" id=\"cb_showsignatures\" $checked[showsignatures] />$vbphrase[show_signatures]</label><input type=\"hidden\" name=\"set_options[showsignatures]\" value=\"1\" /></div>
+', '', $vbulletin->templatecache['modifyoptions']);
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Add nice promo link to signature</title>
+			<hookname>postbit_display_complete</hookname>
+			<phpcode><![CDATA[if (!empty ($this->post['signature']))
+{
+    $signature = $this->post['signature'];
+    eval('$post[\'signature\'] = "' . fetch_template('promo_signature') . '";');
+}]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Force post to have enabled signature, except quests</title>
+			<hookname>postbit_display_start</hookname>
+			<phpcode><![CDATA[if ($show['member']) {
+    $this->post['showsignature'] = 1;
+    $this->registry->userinfo['showsignatures'] = 1;
+} else {
+    $this->post['showsignature'] = 0;
+    $this->registry->userinfo['showsignatures'] = 0;
+}]]></phpcode>
+		</plugin>
+	</plugins>
+	<phrases>
+		<phrasetype name="Postbit" fieldname="postbit">
+			<phrase name="promo_signature_msg" date="1265910588" username="Vitaly" version=""><![CDATA[Need advertisements in signature? Click for details.]]></phrase>
+		</phrasetype>
+	</phrases>
+	<options>
+	</options>
+	<helptopics>
+	</helptopics>
+	<cronentries>
+	</cronentries>
+	<faqentries>
+	</faqentries>
+	<templateedits>
+	</templateedits>
+</product>
