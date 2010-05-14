@@ -3,7 +3,7 @@
 <product productid="signature_promo" active="1">
 	<title>Signature Promo</title>
 	<description />
-	<version>0.1</version>
+	<version>0.2</version>
 	<url />
 	<versioncheckurl />
 	<apm_releasedate>0</apm_releasedate>
@@ -16,17 +16,22 @@
 	<codes>
 	</codes>
 	<templates>
-		<template name="promo_signature" templatetype="template" date="1265910648" username="Vitaly" version=""><![CDATA[        <div class="signature_block">
-                <a href="payments.php$session[sessionurl_q]"><img src="$stylevar[imgdir_misc]/colorpicker_transparent.gif" alt="$vbphrase[promo_signature_msg]"  border="0" /></a>
-                $signature
-        </div>
-        ]]></template>
+		<template name="promo_signature" templatetype="template" date="1273839984" username="sawoy" version="0.2"><![CDATA[<div class="signature_block">
+	<a href="payments.php{vb:raw session.sessionurl_q}">
+		<img src="{vb:stylevar imgdir_misc}/colorpicker_transparent.gif" alt="{vb:phrase promo_signature_msg}" border="0px" />
+	</a>
+	{vb:raw signature}
+</div>]]></template>
 	</templates>
+	<stylevardfns>
+	</stylevardfns>
+	<stylevars>
+	</stylevars>
 	<plugins>
 		<plugin active="1" executionorder="5">
 			<title>Cache Templates</title>
 			<hookname>cache_templates</hookname>
-			<phpcode><![CDATA[$globaltemplates[] = 'promo_signature';]]></phpcode>
+			<phpcode><![CDATA[$cache[] = 'promo_signature';]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
 			<title>Remove signature checkbox from post edit</title>
@@ -48,8 +53,13 @@
 			<hookname>parse_templates</hookname>
 			<phpcode><![CDATA[if ($vbulletin->templatecache['modifyoptions'])
 {
-    $vbulletin->templatecache['modifyoptions'] = str_replace('							<div><label for=\"cb_showsignatures\"><input type=\"checkbox\" name=\"options[showsignatures]\" value=\"1\" id=\"cb_showsignatures\" $checked[showsignatures] />$vbphrase[show_signatures]</label><input type=\"hidden\" name=\"set_options[showsignatures]\" value=\"1\" /></div>
-', '', $vbulletin->templatecache['modifyoptions']);
+    $pattern = array(
+        '<label for="cb_showsignatures"><input type="checkbox" name="options[showsignatures]" value="1" id="cb_showsignatures" tabindex="1" \' . $checked[\'showsignatures\'] . \' /> \' . vB_Template_Runtime::parsePhrase("show_signatures") . \'</label>',
+        '<input type="hidden" name="set_options[showsignatures]" value="1" />'
+    );
+    $replace = '';
+
+    $vbulletin->templatecache['modifyoptions'] = str_replace( $pattern, $replace, $vbulletin->templatecache['modifyoptions'] );
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -57,8 +67,12 @@
 			<hookname>postbit_display_complete</hookname>
 			<phpcode><![CDATA[if (!empty ($this->post['signature']))
 {
-    $signature = $this->post['signature'];
-    eval('$post[\'signature\'] = "' . fetch_template('promo_signature') . '";');
+    $tmpl = vB_Template::create('promo_signature');
+    $tmpl->register('signature', $this->post['signature']);
+
+    $this->post['signature'] = $tmpl->render();
+
+    unset($tmpl);
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
@@ -71,6 +85,11 @@
     $this->post['showsignature'] = 0;
     $this->registry->userinfo['showsignatures'] = 0;
 }]]></phpcode>
+		</plugin>
+		<plugin active="1" executionorder="5">
+			<title>Remove signature checkbox from quick reply form</title>
+			<hookname>showthread_complete</hookname>
+			<phpcode><![CDATA[$vbulletin->userinfo['signature'] = '';]]></phpcode>
 		</plugin>
 	</plugins>
 	<phrases>
@@ -86,6 +105,4 @@
 	</cronentries>
 	<faqentries>
 	</faqentries>
-	<templateedits>
-	</templateedits>
 </product>
