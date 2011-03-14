@@ -3,7 +3,7 @@
 <product productid="signature_promo" active="1">
 	<title>Signature Promo</title>
 	<description />
-	<version>0.2</version>
+	<version>0.3</version>
 	<url />
 	<versioncheckurl />
 	<apm_releasedate>0</apm_releasedate>
@@ -53,6 +53,7 @@
 			<hookname>parse_templates</hookname>
 			<phpcode><![CDATA[if ($vbulletin->templatecache['modifyoptions'])
 {
+    $before_patch = $vbulletin->templatecache['modifyoptions'];
     $pattern = array(
         '<label for="cb_showsignatures"><input type="checkbox" name="options[showsignatures]" value="1" id="cb_showsignatures" tabindex="1" \' . $checked[\'showsignatures\'] . \' /> \' . vB_Template_Runtime::parsePhrase("show_signatures") . \'</label>',
         '<input type="hidden" name="set_options[showsignatures]" value="1" />'
@@ -60,6 +61,21 @@
     $replace = '';
 
     $vbulletin->templatecache['modifyoptions'] = str_replace( $pattern, $replace, $vbulletin->templatecache['modifyoptions'] );
+    if ($before_patch == $vbulletin->templatecache['modifyoptions'])
+    {
+        $err_message = sprintf("Product '%s', error in hook %s : can't modify template '%s'",
+                            'Signature Promo',
+                            'parse_templates',
+                            'modifyoptions');
+        error_log($err_message); // Send to PHP error log
+        if ($vbulletin->debug)
+        {
+            trigger_error($err_message, E_USER_WARNING); // Display on page
+            require_once(DIR . '/includes/functions_log_error.php');
+            log_vbulletin_error($err_message, 'php'); // Send to vB error log
+        }
+        unset($err_message, $before_patch);
+    }
 }]]></phpcode>
 		</plugin>
 		<plugin active="1" executionorder="5">
